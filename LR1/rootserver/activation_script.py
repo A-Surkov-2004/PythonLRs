@@ -2,6 +2,7 @@ from importlib.abc import PathEntryFinder
 from importlib.util import spec_from_loader
 import re
 import sys
+import requests
 from urllib.request import urlopen
 
 class URLLoader:
@@ -33,8 +34,12 @@ class URLFinder(PathEntryFinder):
 def url_hook(some_str):
     if not some_str.startswith(("http", "https")):
         raise ImportError
-    with urlopen(some_str) as page:  # requests.get()
-        data = page.read().decode("utf-8")
+
+    #with urlopen(some_str) as page:  # requests.get()
+    #    data = page.read().decode("utf-8")
+    response = requests.get(some_str)
+    data = response.text
+
     filenames = re.findall("[a-zA-Z_][a-zA-Z0-9_]*.py", data)
     modnames = {name[:-3] for name in filenames}
     return URLFinder(some_str, modnames)
